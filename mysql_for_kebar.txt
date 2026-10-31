@@ -1,0 +1,234 @@
+EJERCICIOS DE MYSQL db_postobon
+
+-- Ejercicio 1: creo la tabla de empleados
+CREATE TABLE empleados (
+    id            INT           NOT NULL AUTO_INCREMENT,
+    sede_id       INT           NOT NULL,
+    nombre        VARCHAR(80)   NOT NULL,
+    cargo         VARCHAR(50)   DEFAULT NULL,
+    salario       DECIMAL(10,2) NOT NULL,
+    fecha_ingreso DATE          DEFAULT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_empleados_sedes FOREIGN KEY (sede_id) REFERENCES sedes (id) ON DELETE CASCADE,
+    CONSTRAINT chk_empleados_salario CHECK (salario > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+ingresar datos de los empleados
+INSERT INTO empleados (sede_id, nombre, cargo, salario, fecha_ingreso) VALUES
+(1,'Carlos Pinto','Jefe de sede',5200000.00,'2018-03-12'),
+(1,'Marta Gómez','Operario de planta',2100000.00,'2021-07-05'),
+(1,'Luis Brito','Conductor',2400000.00,'2022-01-17'),
+(1,'Ana Redondo','Auxiliar administrativo',1900000.00,'2023-02-20'),
+(2,'Jorge Iguarán','Jefe de sede',5000000.00,'2017-09-01'),
+(2,'Elena Epieyú','Operario de planta',2050000.00,'2022-05-09'),
+(2,'Pedro Uriana','Vendedor',2300000.00,'2023-08-14'),
+(4,'Sofía Valdés','Jefe de sede',5600000.00,'2016-11-22'),
+(4,'Camilo Barrios','Supervisor',3400000.00,'2019-04-15'),
+(4,'Laura Mendoza','Analista de calidad',3800000.00,'2020-10-03'),
+(4,'Andrés Pacheco','Operario de planta',2150000.00,'2024-01-08'),
+(5,'Diana Rojas','Jefe de sede',6100000.00,'2015-06-30'),
+(5,'Felipe Cárdenas','Supervisor',3600000.00,'2018-12-10'),
+(5,'Natalia Soto','Vendedor',2500000.00,'2023-03-27'),
+(6,'Ricardo Zapata','Jefe de sede',5800000.00,'2016-02-18'),
+(6,'Paula Giraldo','Analista de calidad',4000000.00,'2021-09-13'),
+(6,'Mateo Osorio','Conductor',2450000.00,'2024-06-01'),
+(7,'Valentina Ríos','Supervisor',3500000.00,'2020-01-27'),
+(8,'Héctor Cubillos','Jefe de sede',5400000.00,'2017-05-16'),
+(8,'Isabel Moreno','Operario de planta',2200000.00,'2022-11-21'),
+(8,'Julián Torres','Conductor',2350000.00,'2023-10-02'),
+(8,'Camila Vargas','Auxiliar administrativo',1950000.00,'2025-02-10');
+
+
+-- Ejercicio 4: 3 empleados adicionales con una sola sentencia y verificación
+INSERT INTO empleados (sede_id, nombre, cargo, salario, fecha_ingreso) VALUES
+(2, 'Rosa Fince',    'Operario de planta', 2100000.00, '2025-03-03'),
+(5, 'Tomás Herrera', 'Conductor',          2400000.00, '2025-04-21'),
+(8, 'Gloria Páez',   'Vendedor',           2550000.00, '2025-05-12');
+
+SELECT COUNT(*) AS total_empleados FROM empleados;   -- debe dar 25
+
+-- Ejercicio 5: 4 departamentos nuevos, en orden
+INSERT INTO departamento (nombre) VALUES
+('Antioquia'),
+('Valle del Cauca'),
+('Cundinamarca'),
+('Santander');
+
+-- Ejercicio 6: 4 sedes nuevas 
+INSERT INTO sedes (id_departamento, nombre) VALUES
+((SELECT id FROM departamento WHERE nombre = 'Antioquia'),       'Itagüí'),
+((SELECT id FROM departamento WHERE nombre = 'Antioquia'),       'Bello'),
+((SELECT id FROM departamento WHERE nombre = 'Valle del Cauca'), 'Palmira'),
+(NULL,                                                           'Sede Móvil');
+-- Ejercicio 7: corregir nombres de sedes de prueba 
+
+UPDATE sedes SET nombre = 'Acacías'       WHERE nombre = 'dos';
+UPDATE sedes SET nombre = 'Granada'       WHERE nombre = 'tres';
+UPDATE sedes SET nombre = 'Puerto López'  WHERE nombre = 'cuatro';
+UPDATE sedes SET nombre = 'Cumaral'       WHERE nombre = 'cinco';
+UPDATE sedes SET nombre = 'Restrepo'      WHERE nombre = 'seis';
+UPDATE sedes SET nombre = 'San Martín'    WHERE nombre = 'siete';
+UPDATE sedes SET nombre = 'Puerto Gaitán' WHERE nombre = 'ocho';
+UPDATE sedes SET nombre = 'Mesetas'       WHERE nombre = 'nueve';
+UPDATE sedes SET nombre = 'La Macarena'   WHERE nombre = 'diez';
+
+UPDATE sedes
+SET id_departamento = (SELECT id FROM departamento WHERE nombre = 'Cundinamarca')
+WHERE nombre = 'Bogota';
+
+UPDATE sedes
+SET id_departamento = (SELECT id FROM departamento WHERE nombre = 'Antioquia')
+WHERE nombre = 'Medellin';
+
+UPDATE sedes
+SET id_departamento = (SELECT id FROM departamento WHERE nombre = 'Valle del Cauca')
+WHERE nombre = 'Cali';
+SELECT s.id, s.nombre AS sede, d.nombre AS departamento
+FROM sedes s
+LEFT JOIN departamento d ON d.id = s.id_departamento
+ORDER BY s.id;
+-- Ejercicio 1
+SELECT id, nombre, sede_id, salario
+FROM empleados
+WHERE salario > (
+    SELECT AVG(salario)
+    FROM empleados
+)
+ORDER BY salario DESC, id ASC;
+-- Ejercicio 2
+SELECT id, nombre, sede_id
+FROM empleados
+WHERE sede_id IN (
+    SELECT id
+    FROM sedes
+    WHERE id_departamento = 1
+)
+ORDER BY id ASC;
+-- Ejercicio 3
+SELECT s.id AS sede_id, s.nombre AS sede
+FROM sedes AS s
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM empleados AS e
+    WHERE e.sede_id = s.id
+)
+ORDER BY sede_id ASC;
+-- Ejercicio 4
+SELECT
+    e.id,
+    e.nombre,
+    e.sede_id,
+    e.salario,
+    (
+        SELECT AVG(e2.salario)
+        FROM empleados AS e2
+        WHERE e2.sede_id = e.sede_id
+    ) AS promedio_sede
+FROM empleados AS e
+WHERE e.salario > (
+    SELECT AVG(e2.salario)
+    FROM empleados AS e2
+    WHERE e2.sede_id = e.sede_id
+)
+ORDER BY e.sede_id ASC, e.id ASC;
+-- Ejercicio 5
+SELECT n.sede_id, n.nomina
+FROM (
+    SELECT sede_id, SUM(salario) AS nomina
+    FROM empleados
+    GROUP BY sede_id
+) AS n
+WHERE n.nomina > (
+    SELECT AVG(n2.nomina)
+    FROM (
+        SELECT sede_id, SUM(salario) AS nomina
+        FROM empleados
+        GROUP BY sede_id
+    ) AS n2
+)
+ORDER BY n.nomina DESC, n.sede_id ASC;
+
+VISTAS EN MySQL
+1
+CREATE OR REPLACE VIEW vw_s13_salarios_superiores_promedio
+    (id, nombre, sede_id, salario)
+AS
+SELECT id, nombre, sede_id, salario
+FROM empleados
+WHERE salario > (
+    SELECT AVG(salario)
+    FROM empleados
+);
+SELECT id, nombre, sede_id, salario
+FROM vw_s13_salarios_superiores_promedio
+ORDER BY salario DESC, id ASC;
+2
+CREATE OR REPLACE VIEW vw_s13_sedes_sin_empleados
+    (sede_id, sede)
+AS
+SELECT s.id, s.nombre
+FROM sedes AS s
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM empleados AS e
+    WHERE e.sede_id = s.id
+);
+SELECT sede_id, sede
+FROM vw_s13_sedes_sin_empleados
+ORDER BY sede_id ASC;
+
+PROCEDIMIENTOS ALMACENADOS
+1
+DELIMITER $$
+
+CREATE PROCEDURE empleados_por_cargo(
+    IN cargo_buscado VARCHAR(50)
+)
+BEGIN
+    SELECT
+        e.id,
+        e.nombre AS empleado,
+        e.cargo,
+        s.nombre AS sede
+    FROM empleados AS e
+    INNER JOIN sedes AS s
+        ON e.sede_id = s.id
+    WHERE e.cargo = cargo_buscado;
+END $$
+
+DELIMITER ;
+2
+DELIMITER //
+
+CREATE PROCEDURE resumen_sede(
+    IN id_sede INT,
+    OUT total INT,
+    OUT nomina DECIMAL(12,2),
+    OUT promedio DECIMAL(12,2)
+)
+BEGIN
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM sedes
+        WHERE id = id_sede
+    ) THEN
+
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: la sede no existe';
+
+    ELSE
+
+        SELECT
+            COUNT(*),
+            COALESCE(SUM(salario), 0),
+            COALESCE(AVG(salario), 0)
+        INTO total, nomina, promedio
+        FROM empleados
+        WHERE sede_id = id_sede;
+
+    END IF;
+
+END //
+
+DELIMITER ;
