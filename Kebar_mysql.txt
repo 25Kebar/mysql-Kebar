@@ -1,0 +1,73 @@
+n°8 ¿Cuántas sedes hay en total?¿Cuántos empleados?
+empleados = SELECT COUNT(*) AS total_empleados FROM empleados;
+sedes = SELECT COUNT(*) AS total_sedes FROM sedes;
+
+SELECT COUNT(*) AS total_empleados, (SELECT COUNT(*) AS total_sedes FROM sedes) FROM empleados;
+
+N°9  Muestre en una sola fila el salario más alto (mayor),el más bajo(menor)y el promedio redondeado a 2 decimales(promedio).
+
+SELECT MAX(salario) AS salario_mas_alto, MIN(salario) AS salario_mas_bajo, ROUND(AVG(salario),2) AS promedio FROM empleados;
+
+N°10 ¿Cuánto suma la nómina completa de la empresa? Nombre la columna nomina_total.
+
+SELECT SUM(salario) AS nomina_total FROM empleados;
+
+N°11 ¿Cuáles la fecha de ingreso más reciente? Nombre la columna ingreso_mas_reciente.
+
+SELECT MAX(fecha_ingreso) AS ingreso_mas_reciente FROM empleados;
+
+n°17 
+SELECT s.id, s.nombre AS sede
+    -> FROM sedes s
+    -> LEFT JOIN empleados e ON e.sede_id = s.id
+    -> WHERE e.id IS NULL;
+n°18 
+ SELECT d.nombre AS departamento, COUNT(s.id) AS total_sedes
+    -> FROM departamento d
+    -> LEFT JOIN sedes s ON s.id_departamento = d.id
+    -> GROUP BY d.id, d.nombre;
+n°19
+SELECT s.nombre AS sede, SUM(e.salario) AS nomina
+    -> FROM sedes s
+    -> INNER JOIN empleados e ON e.sede_id = s.id
+    -> GROUP BY s.id, s.nombre;
+n°20 
+SELECT d.nombre AS departamento, MAX(e.salario) AS salario_maximo
+    -> FROM departamento d
+    -> INNER JOIN sedes s     ON s.id_departamento = d.id
+    -> INNER JOIN empleados e ON e.sede_id = s.id
+    -> GROUP BY d.id, d.nombre;
+n°21 
+
+SELECT nombre, cargo, salario
+    -> FROM empleados
+    -> WHERE salario > 3000000
+    -> ORDER BY salario DESC;
+n°22
+
+SELECT d.nombre AS departamento, COUNT(s.id) AS total_sedes
+    -> FROM departamento d
+    -> INNER JOIN sedes s ON s.id_departamento = d.id
+    -> GROUP BY d.id, d.nombre
+    -> HAVING COUNT(s.id) > 2;
+n°23
+ SELECT s.nombre AS sede, SUM(e.salario) AS nomina
+    -> FROM sedes s
+    -> INNER JOIN empleados e ON e.sede_id = s.id
+    -> GROUP BY s.id, s.nombre
+    -> HAVING SUM(e.salario) > 12000000
+    -> ORDER BY nomina DESC;
+n°24
+
+SELECT
+    d.nombre                  AS departamento,
+    COUNT(DISTINCT s.id)      AS sedes_con_personal,
+    COUNT(e.id)               AS empleados,
+    SUM(e.salario)            AS nomina
+FROM departamentos d
+INNER JOIN sedes s     ON s.id_departamento = d.id
+INNER JOIN empleados e ON e.sede_id = s.id
+WHERE e.fecha_ingreso >= '2022-01-01'
+GROUP BY d.id, d.nombre
+HAVING SUM(e.salario) > 8000000
+ORDER BY nomina DESC;
